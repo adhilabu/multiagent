@@ -104,6 +104,23 @@ class CheckpointListResponse(BaseModel):
     checkpoints: List[CheckpointItem]
 
 
+class SessionListItem(BaseModel):
+    """Individual session info for listing."""
+    
+    thread_id: str
+    user_query: str
+    status: str
+    revision_count: int
+    has_final_response: bool
+
+
+class SessionListResponse(BaseModel):
+    """Response for listing all sessions."""
+    
+    sessions: List[SessionListItem]
+    total: int
+
+
 class HealthResponse(BaseModel):
     """Health check response."""
     

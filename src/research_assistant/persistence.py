@@ -105,3 +105,71 @@ def get_checkpoint_state(
         # CheckpointTuple has channel_values attribute containing the state dict
         return checkpoint.checkpoint.get('channel_values')
     return None
+
+
+def list_all_sessions(db_path: str | None = None) -> list[dict]:
+    """
+    List all unique research sessions from the database.
+    
+    Args:
+        db_path: Optional custom database path
+        
+    Returns:
+        List of session info dictionaries with thread_id and metadata
+    """
+    path = db_path or get_db_path()
+    
+    if not Path(path).exists():
+        return []
+    
+    conn = sqlite3.connect(path, check_same_thread=False)
+    cursor = conn.cursor()
+    
+    try:
+        # Query unique thread_ids from checkpoints table
+        # The SqliteSaver uses a 'checkpoints' table with thread_id column
+        cursor.execute("""
+            SELECT DISTINCT thread_id 
+            FROM checkpoints 
+            ORDER BY thread_id
+        """)
+        
+        sessions = []
+        for (thread_id,) in cursor.fetchall():
+            # Get the latest checkpoint state for each session
+            state = get_checkpoint_state(thread_id, db_path=db_path)
+            
+            if state:
+                sessions.append({
+                    "thread_id": thread_id,
+                    "user_query": state.get("user_query", "Unknown"),
+                    "status": _determine_status(state),
+                    "revision_count": state.get("revision_count", 0),
+                    "has_final_response": bool(state.get("final_response")),
+                })
+            else:
+                sessions.append({
+                    "thread_id": thread_id,
+                    "user_query": "Unknown",
+                    "status": "unknown",
+                    "revision_count": 0,
+                    "has_final_response": False,
+                })
+        
+        return sessions
+    except sqlite3.OperationalError:
+        # Table might not exist yet
+        return []
+    finally:
+        conn.close()
+
+
+def _determine_status(state: dict) -> str:
+    """Determine the current status based on state."""
+    if state.get("final_response"):
+        return "completed"
+    if state.get("latest_critique") and not state.get("human_approved"):
+        return "awaiting_approval"
+    if state.get("current_plan"):
+        return "researching"
+    return "pending"

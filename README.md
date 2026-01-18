@@ -11,6 +11,7 @@ A multi-agent research assistant powered by **LangGraph** that automatically pla
 - **💾 Session Persistence** — SQLite-based checkpointing for resumable sessions
 - **⏱️ Time-Travel Debugging** — View and restore previous checkpoints
 - **🌐 REST API** — FastAPI-powered API for programmatic access
+- **🎨 Streamlit UI** — Beautiful web interface for interactive research sessions
 
 ## 📦 Architecture
 
@@ -173,6 +174,7 @@ API documentation is available at:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/research` | Start a new research session |
+| `GET` | `/research/sessions/all` | List all research sessions |
 | `GET` | `/research/{thread_id}` | Get session status and results |
 | `POST` | `/research/{thread_id}/approve` | Approve HITL breakpoint |
 | `GET` | `/research/{thread_id}/checkpoints` | List checkpoints for debugging |
@@ -197,6 +199,42 @@ curl -X POST "http://127.0.0.1:8000/research/abc12345/approve" \
 
 ---
 
+## 🎨 Streamlit UI
+
+A modern, interactive web interface for the Research Assistant.
+
+### Starting the Streamlit App
+
+```bash
+# Make sure the FastAPI server is running first
+uvicorn app.main:app --reload
+
+# In a new terminal, start Streamlit
+streamlit run streamlit_app.py
+```
+
+The Streamlit UI is available at: **http://localhost:8501**
+
+### UI Features
+
+| Page | Description |
+|------|-------------|
+| **🚀 New Research** | Start new research sessions with query input and HITL toggle |
+| **� All Sessions** | View all previous sessions with status and quick actions |
+| **�📋 Check Session** | View status, results, and critiques for any session |
+| **✅ Approve Session** | Handle human-in-the-loop approvals with optional feedback |
+| **🕐 Time Travel** | Browse checkpoints for debugging and state inspection |
+
+### Features
+
+- **Real-time API Status** — Shows connection status to the FastAPI backend
+- **Session Persistence** — Remembers last used thread ID for quick access
+- **Rich Results Display** — Expandable research findings with source links
+- **Critique Visualization** — Progress bars and structured feedback display
+- **Dark Theme** — Modern, professional dark-themed interface
+
+---
+
 ## 🧪 Running Tests
 
 ```bash
@@ -215,7 +253,9 @@ pytest tests/test_graph.py
 ```
 MultiAgent/
 ├── main.py                      # CLI entry point
+├── streamlit_app.py             # Streamlit web UI
 ├── pyproject.toml               # Project configuration
+├── requirements.txt             # Python dependencies
 ├── .env.example                 # Environment template
 ├── app/                         # FastAPI REST API
 │   ├── main.py                  # FastAPI app entry point

@@ -5,7 +5,7 @@ from typing import Optional
 
 from src.research_assistant.state import create_initial_state, ResearchResult, CritiqueResult
 from src.research_assistant.graph import create_app
-from src.research_assistant.persistence import list_checkpoints, get_checkpoint_state
+from src.research_assistant.persistence import list_checkpoints, get_checkpoint_state, list_all_sessions
 
 from app.schemas.research import (
     ResearchResponse,
@@ -14,6 +14,8 @@ from app.schemas.research import (
     SessionResponse,
     CheckpointItem,
     CheckpointListResponse,
+    SessionListItem,
+    SessionListResponse,
 )
 
 
@@ -199,6 +201,29 @@ class ResearchService:
                 )
                 for cp in checkpoints
             ],
+        )
+    
+    def get_all_sessions(self) -> SessionListResponse:
+        """
+        List all research sessions.
+        
+        Returns:
+            SessionListResponse with list of all sessions
+        """
+        sessions = list_all_sessions()
+        
+        return SessionListResponse(
+            sessions=[
+                SessionListItem(
+                    thread_id=s.get("thread_id", ""),
+                    user_query=s.get("user_query", "Unknown"),
+                    status=s.get("status", "unknown"),
+                    revision_count=s.get("revision_count", 0),
+                    has_final_response=s.get("has_final_response", False),
+                )
+                for s in sessions
+            ],
+            total=len(sessions),
         )
 
 

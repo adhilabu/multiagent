@@ -8,11 +8,27 @@ from app.schemas.research import (
     ApprovalRequest,
     SessionResponse,
     CheckpointListResponse,
+    SessionListResponse,
 )
 from app.services.research import research_service
 
 
 router = APIRouter(prefix="/research", tags=["Research"])
+
+
+@router.get(
+    "/sessions/all",
+    response_model=SessionListResponse,
+    summary="List All Sessions",
+    description="List all research sessions stored in the database.",
+)
+async def list_all_sessions() -> SessionListResponse:
+    """
+    List all research sessions.
+    
+    Returns a list of all sessions with their current status and metadata.
+    """
+    return research_service.get_all_sessions()
 
 
 @router.post(
